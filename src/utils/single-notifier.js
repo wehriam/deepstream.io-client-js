@@ -87,7 +87,7 @@ SingleNotifier.prototype.recieve = function( name, error, data ) {
 		return;
 	}
 
-	for( i=0; i < entries.length; i++ ) {
+	for( let i=0; i < entries.length; i++ ) {
 		entry = entries[ i ];
 		this._ackTimeoutRegistry.remove({
 			ackId: entry.ackId
