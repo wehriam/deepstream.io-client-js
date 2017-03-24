@@ -1,3 +1,5 @@
+'use strict'
+
 const BrowserWebSocket = global.WebSocket || global.MozWebSocket
 const NodeWebSocket = require('ws')
 const messageParser = require('./message-parser')
@@ -70,7 +72,8 @@ Connection.prototype.getState = function () {
  * to the server. Can be called up to <maxAuthAttempts>
  * times for the same connection.
  *
- * @param   {Object}   authParams A map of user defined auth parameters. E.g. { username:<String>, password:<String> }
+ * @param   {Object}   authParams A map of user defined auth parameters.
+ *                                E.g. { username:<String>, password:<String> }
  * @param   {Function} callback   A callback that will be invoked with the authenticationr result
  *
  * @public
@@ -152,7 +155,9 @@ Connection.prototype.close = function () {
  * @returns {void}
  */
 Connection.prototype._createEndpoint = function () {
-  this._endpoint = BrowserWebSocket ? new BrowserWebSocket(this._url) : new NodeWebSocket(this._url)
+  this._endpoint = BrowserWebSocket
+    ? new BrowserWebSocket(this._url)
+    : new NodeWebSocket(this._url, this._options.nodeSocketOptions)
 
   this._endpoint.onopen = this._onOpen.bind(this)
   this._endpoint.onerror = this._onError.bind(this)
@@ -169,7 +174,10 @@ Connection.prototype._createEndpoint = function () {
  * @returns {void}
  */
 Connection.prototype._sendQueuedMessages = function (deadline) {
-  if (this._state !== C.CONNECTION_STATE.OPEN || this._endpoint.readyState !== this._endpoint.OPEN) {
+  if (
+    this._state !== C.CONNECTION_STATE.OPEN ||
+    this._endpoint.readyState !== this._endpoint.OPEN
+  ) {
     return
   }
 
@@ -177,7 +185,8 @@ Connection.prototype._sendQueuedMessages = function (deadline) {
     this._submit(this._queuedMessages.splice(0, this._options.maxMessagesPerPacket).join(''))
 
     if (!deadline || deadline.timeRemaining() <= 4) {
-      return this._queueNextPacket()
+      this._queueNextPacket()
+      return
     }
   }
 
@@ -240,7 +249,8 @@ Connection.prototype._checkHeartBeat = function () {
     this._client._$onError(
       C.TOPIC.CONNECTION,
       C.EVENT.CONNECTION_ERROR,
-      'heartbeat not received in the last ' + heartBeatTolerance + ' milliseconds')
+      `heartbeat not received in the last ${heartBeatTolerance} milliseconds`
+    )
     this._endpoint.close()
   }
 }
@@ -256,7 +266,12 @@ Connection.prototype._checkHeartBeat = function () {
 Connection.prototype._onOpen = function () {
   this._clearReconnect()
   this._lastHeartBeat = Date.now()
-  this._heartbeatInterval = utils.setInterval(this._checkHeartBeat.bind(this), this._options.heartbeatInterval)
+
+  this._heartbeatInterval = utils.setInterval(
+    this._checkHeartBeat.bind(this),
+    this._options.heartbeatInterval
+  )
+
   this._setState(C.CONNECTION_STATE.AWAITING_CONNECTION)
 }
 
@@ -283,7 +298,7 @@ Connection.prototype._onError = function (error) {
   setTimeout(() => {
     let msg
     if (error.code === 'ECONNRESET' || error.code === 'ECONNREFUSED') {
-      msg = 'Can\'t connect! Deepstream server unreachable on ' + this._originalUrl
+      msg = `Can't connect! Deepstream server unreachable on ${this._originalUrl}`
     } else {
       msg = error.toString()
     }
@@ -326,20 +341,23 @@ Connection.prototype._onClose = function () {
 Connection.prototype._onMessage = function (message) {
   this._rawMessages.push(message)
   if (!this._messageHandler) {
-    this._messageHandler = utils.requestIdleCallback(this._handleMessages, { timeout: this._idleTimeout })
+    this._messageHandler = utils.requestIdleCallback(
+      this._handleMessages,
+      { timeout: this._idleTimeout }
+    )
   }
 }
 
 Connection.prototype._handleMessages = function (deadline) {
   do {
     if (this._parsedMessages.length === 0) {
-      var message = this._rawMessages.shift()
+      const message = this._rawMessages.shift()
       if (!message) {
         break
       }
       this._parsedMessages = messageParser.parse(message.data, this._client)
     } else {
-      var parsedMessage = this._parsedMessages.shift()
+      const parsedMessage = this._parsedMessages.shift()
       if (!parsedMessage) {
         continue
       } else if (parsedMessage.topic === C.TOPIC.CONNECTION) {
@@ -353,7 +371,10 @@ Connection.prototype._handleMessages = function (deadline) {
   } while (deadline.timeRemaining() > 4)
 
   if ((this._parsedMessages.length > 0 || this._rawMessages.length > 0) && !this._deliberateClose) {
-    this._messageHandler = utils.requestIdleCallback(this._handleMessages.bind(this), { timeout: this._idleTimeout })
+    this._messageHandler = utils.requestIdleCallback(
+      this._handleMessages.bind(this),
+      { timeout: this._idleTimeout }
+    )
   } else {
     this._messageHandler = null
   }
@@ -392,7 +413,13 @@ Connection.prototype._handleConnectionResponse = function (message) {
     }
   } else if (message.action === C.ACTIONS.CHALLENGE) {
     this._setState(C.CONNECTION_STATE.CHALLENGING)
-    this._submit(messageBuilder.getMsg(C.TOPIC.CONNECTION, C.ACTIONS.CHALLENGE_RESPONSE, [this._originalUrl]))
+    this._submit(
+      messageBuilder.getMsg(
+        C.TOPIC.CONNECTION,
+        C.ACTIONS.CHALLENGE_RESPONSE,
+        [this._originalUrl]
+      )
+    )
   } else if (message.action === C.ACTIONS.REJECTION) {
     this._challengeDenied = true
     this.close()
@@ -455,9 +482,8 @@ Connection.prototype._handleAuthResponse = function (message) {
 Connection.prototype._getAuthData = function (data) {
   if (data === undefined) {
     return null
-  } else {
-    return messageParser.convertTyped(data, this._client)
   }
+  return messageParser.convertTyped(data, this._client)
 }
 
 /**

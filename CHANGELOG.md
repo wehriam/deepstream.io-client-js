@@ -1,3 +1,18 @@
+## [2.1.2] - 2017-02-28
+
+### Enhancements
+
+- heartbeat missed should close connection [#324](https://github.com/deepstreamIO/deepstream.io-client-js/pull/324)
+- optimized json-path patch [#329](https://github.com/deepstreamIO/deepstream.io-client-js/pull/329)
+- TypeScript typings [#283](https://github.com/deepstreamIO/deepstream.io-client-js/pull/283) and [#338](https://github.com/deepstreamIO/deepstream.io-client-js/pull/338)
+- Added support for non-NaNish base 16 numbers in jsonpath [#328](https://github.com/deepstreamIO/deepstream.io-client-js/pull/328)
+- There is now a single ack timeout registry for the client, shared between all handlers. This means that ack timeouts are cleared when the connection is lost and don't occur when the connection is not open [#342](https://github.com/deepstreamIO/deepstream.io-client-js/pull/342)
+
+### Bug Fixes
+
+- reset queued methods in List once called [#315](https://github.com/deepstreamIO/deepstream.io-client-js/pull/315)
+- fix queued methods by passing index to .bind() [#316](https://github.com/deepstreamIO/deepstream.io-client-js/pull/316)
+
 ## [2.1.1] - 2016-12-21
 
 ### Bug Fixes
