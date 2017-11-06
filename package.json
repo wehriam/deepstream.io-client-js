@@ -2,17 +2,18 @@
   "name": "deepstream.io-client-js",
   "version": "2.3.0",
   "description": "the javascript client for deepstream.io",
-  "main": "dist/lib/client.js",
+  "main": "dist/src/client.js",
   "directories": {
     "test": "test"
   },
   "scripts": {
     "tsc": "rm -rf dist && tsc",
-    "build": "webpack",
+    "build": "webpack --config webpack.dev.js",
+    "build:prod": "webpack --config webpack.prod.js",
     "rebuild": "rimraf dist && webpack",
     "clean": "rimraf dist",
-    "lint": "tslint test/**/*.ts src/**/*.ts -t verbose",
-    "lint:fix": "tslint --fix test/**/*.t src/**/*.ts -t verbose",
+    "lint": "tslint test/*.ts test/**/*.ts src/*.ts src/**/*.ts -t verbose",
+    "lint:fix": "npm run lint -- --fix",
     "test": "npm run tsc && mocha dist/test --recursive --reporter dot --require source-map-support/register",
     "test:coverage": "npm run tsc && istanbul cover _mocha dist/test -- --recursive --reporter dot --require source-map-support/register"
   },
@@ -42,8 +43,7 @@
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
     "babel-polyfill": "^6.26.0",
-    "babel-preset-es2015": "^6.24.1",
-    "babel-preset-stage-0": "^6.24.1",
+    "babel-preset-env": "^1.6.1",
     "bluebird": "^3.5.1",
     "chai": "^4.1.2",
     "coveralls": "^3.0.0",
@@ -52,8 +52,9 @@
     "rimraf": "^2.6.2",
     "sinon": "^4.0.1",
     "source-map-support": "^0.5.0",
-    "ts-loader": "^3.0.5",
+    "ts-loader": "^3.1.1",
     "typescript": "^2.5.3",
+    "uglifyjs-webpack-plugin": "^1.0.1",
     "webpack": "^3.8.1"
   },
   "author": "deepstreamHub GmbH",

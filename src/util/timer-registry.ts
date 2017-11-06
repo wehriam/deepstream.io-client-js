@@ -2,7 +2,7 @@ export interface Timeout {
     callback: Function,
     duration: number,
     context: any,
-    data?: object
+    data?: any
 }
 
 export class TimerRegistry {
@@ -18,4 +18,9 @@ export class TimerRegistry {
         clearTimeout(timerId)
         return true
     }
+
+    public requestIdleCallback (callback: Function): void {
+        process.nextTick(callback)
+    }
+
 }
