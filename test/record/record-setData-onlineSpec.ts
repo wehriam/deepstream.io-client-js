@@ -1,4 +1,3 @@
-import * as BBPromise from 'bluebird'
 import { expect } from 'chai'
 import { spy, assert } from 'sinon'
 import { getServicesMock } from '../mocks'
@@ -154,6 +153,10 @@ describe('record setData online', () => {
       })
 
     recordHandler.setData(name, path, data, () => {})
+  })
+
+  describe('with ack', () => {
+
   })
 
 })

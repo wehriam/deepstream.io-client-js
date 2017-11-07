@@ -10,7 +10,7 @@ import { RPCHandler, RPCProvider } from '../../src/rpc/rpc-handler'
 import { RPCResponse } from '../../src/rpc/rpc-response'
 import { TimeoutRegistry } from '../../src/util/timeout-registry'
 
-describe.only('RPC handler', () => {
+describe('RPC handler', () => {
   let services: any
   let rpcHandler: RPCHandler
   let handle: Function
