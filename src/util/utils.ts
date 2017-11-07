@@ -192,7 +192,7 @@ export const normalizeSetArguments = (args: IArguments, startIndex: number = 0):
     }
 
     if (args.length === startIndex + 2) {
-      if (typeof args[startIndex] === 'string' && typeof args[startIndex + 1] === 'object') {
+      if (typeof args[startIndex] === 'string') {
         result = { path: args[startIndex], data: args[startIndex + 1], callback: undefined }
       }
       if (typeof args[startIndex] === 'object' && typeof args[startIndex + 1] === 'function') {
@@ -205,13 +205,16 @@ export const normalizeSetArguments = (args: IArguments, startIndex: number = 0):
     }
 
     if (result) {
-      if (result.path !== undefined && typeof result.path !== 'string' || result.path.length === 0) {
+      if (
+        result.path !== undefined && typeof result.path !== 'string' ||
+        (result.path && result.path.length === 0)
+      ) {
         throw Error ('Invalid set path argument')
       }
       if (result.callback !== undefined && typeof result.callback !== 'function') {
         throw Error ('Invalid set callback argument')
       }
-      if (result.data === undefined) {
+      if (result.data === undefined && result.path === undefined) {
         throw Error ('Invalid set data argument')
       }
       return result

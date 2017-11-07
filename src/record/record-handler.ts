@@ -207,10 +207,14 @@ export class RecordHandler {
    */
   public setData (recordName: string, path: string, data?: any, callback?: WriteAckCallback): void
   public setData (recordName: string, path: string, data: any, callback?: WriteAckCallback): void
+  public setData (recordName: string, data: any, callback?: WriteAckCallback): void
   public setData (recordName: string, args: utils.RecordSetArguments): void
   public setData (recordName: string, ...rest: Array<any>): void {
     const { path, data, callback } = utils.normalizeSetArguments(arguments, 1)
 
+    if (typeof recordName !== 'string' || recordName.length === 0) {
+      throw new Error('invalid argument: recordName')
+    }
     if (!path && (data === null || typeof data !== 'object')) {
       throw new Error('invalid argument: data must be an object when no path is provided')
     }
@@ -227,17 +231,28 @@ export class RecordHandler {
 
     let action
     if (path) {
-      action = callback ? RECORD_ACTION.CREATEANDPATCH_WITH_WRITE_ACK : RECORD_ACTION.CREATEANDPATCH
+      if (data === undefined) {
+        action = callback ? RECORD_ACTION.ERASE_WITH_WRITE_ACK : RECORD_ACTION.ERASE
+      } else {
+        action = callback ? RECORD_ACTION.CREATEANDPATCH_WITH_WRITE_ACK : RECORD_ACTION.CREATEANDPATCH
+      }
     } else {
       action = callback ? RECORD_ACTION.CREATEANDUPDATE_WITH_WRITE_ACK : RECORD_ACTION.CREATEANDUPDATE
     }
 
-    this.services.connection.sendMessage({
+    const message: RecordMessage = {
       topic: TOPIC.RECORD,
       action,
       name: recordName,
       version: -1
-    })
+    }
+    if (path) {
+      message.path = path
+    }
+    if (data) {
+      message.parsedData = data
+    }
+    this.services.connection.sendMessage(message)
   }
 
   /**
