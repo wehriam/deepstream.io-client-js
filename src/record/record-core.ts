@@ -378,7 +378,7 @@ export class RecordCore extends Emitter {
         name: this.name
       }
     })
-    console.log('sending')
+
     this.services.connection.sendMessage({
       topic: TOPIC.RECORD,
       action: RECORD_ACTION.SUBSCRIBECREATEANDREAD,
